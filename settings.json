@@ -1,4 +1,4 @@
 {
-    "ollama_server_address": "http://127.0.0.1:11434",
-    "ollama_model": "llama3:latest"
+    "ollama_server_address": "http://192.168.42.250:11434",
+    "ollama_model": "llama4:latest"
 }
