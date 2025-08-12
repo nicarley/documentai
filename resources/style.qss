@@ -1,0 +1,502 @@
+/*
+ * ===================================================================
+ *   Unified Modern Light QSS Stylesheet for All Applications
+ * ===================================================================
+ *   A clean, professional light theme for a consistent look and feel
+ *   across all application modules.
+ *
+ *   Version: 2.0 (with refinements and new widget styles)
+ * ===================================================================
+ */
+
+/* General Window and Widget Styling */
+QWidget {
+    background-color: #f0f2f5; /* Soft, light gray background */
+    color: #212529;            /* Dark text for high contrast */
+    font-family: "Segoe UI", "Cantarell", "Helvetica Neue", sans-serif;
+    font-size: 10pt;
+    border: none;
+}
+
+/* General Label Styling */
+QLabel {
+    background-color: transparent;
+    /* Adjusted to include horizontal padding for consistency with accounting app */
+    padding: 0px 10px 4px 10px;
+}
+
+/* Specific Labels for eFax/Ticket/Quicklook Apps */
+QLabel#HintLabel {
+    font-size: 9pt;
+    color: #6c757d; /* Muted gray for hints */
+    padding-top: 2px;
+}
+
+QLabel#FileStatusLabel {
+    font-style: italic;
+    color: #198754; /* Standard success green for status */
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+QLabel#resultLabel { /* Specific styling for the result label */
+    font-size: 9.5pt;
+    color: #212529;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6; /* Light separator line */
+    margin-top: 8px;
+}
+
+/* QLineEdit for search bars and inputs */
+QLineEdit {
+    background-color: #ffffff; /* White background for inputs */
+    border: 1px solid #ced4da; /* Standard light gray border */
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 10pt;
+    min-height: 22px;
+}
+
+QLineEdit:focus {
+    border: 1px solid #86b7fe; /* Highlight color on focus (light blue) */
+}
+
+/* REFINED: Added read-only state for clarity */
+QLineEdit:read-only {
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+}
+
+QLineEdit::placeholder {
+    color: #6c757d; /* Muted gray for placeholder text */
+}
+
+/* =================================================
+ *   REFINED: PushButton Styling with Gradients
+ * ================================================= */
+QPushButton {
+    /* A subtle vertical gradient for a more tactile feel */
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #1e7eff, stop: 1 #0d6efd);
+    color: #ffffff;
+    border: 1px solid #0d6efd; /* Add a border for a crisper edge */
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-weight: bold;
+    outline: none;
+}
+
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #1a6bda, stop: 1 #0b5ed7);
+    border-color: #0b5ed7;
+}
+
+QPushButton:pressed {
+    background-color: #0a58ca;
+    border-color: #0a58ca;
+}
+
+QPushButton:disabled {
+    background-color: #adb5bd;
+    border-color: #adb5bd;
+    color: #f8f9fa;
+}
+
+/* Specific style for Exit/Cancel buttons */
+QPushButton#ExitButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #e44d5b, stop: 1 #dc3545);
+    border-color: #dc3545;
+}
+QPushButton#ExitButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #c73c4a, stop: 1 #bb2d3b);
+    border-color: #bb2d3b;
+}
+QPushButton#ExitButton:pressed {
+    background-color: #a71d2a;
+    border-color: #a71d2a;
+}
+
+/* QTextEdit/QTextBrowser for 'About' and 'Ticket' windows */
+QTextEdit, QTextBrowser {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 10px;
+    color: #212529;
+}
+
+QTextEdit:focus, QTextBrowser:focus {
+    border: 1px solid #86b7fe;
+}
+
+/* ComboBox Styling */
+QComboBox {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px 10px;
+    min-height: 20px;
+}
+
+QComboBox:hover {
+    border: 1px solid #adb5bd;
+}
+
+QComboBox:on { /* When the popup is open */
+    border: 1px solid #86b7fe;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left-width: 1px;
+    border-left-color: #ced4da;
+    border-left-style: solid;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+QComboBox::down-arrow {
+    /* IMPORTANT: You will need an arrow icon visible on a light background */
+    image: url(./resources/down_arrow_dark.png);
+    width: 12px;
+    height: 12px;
+}
+
+QComboBox QAbstractItemView { /* The popup list */
+    background-color: #ffffff;
+    border: 1px solid #adb5bd;
+    selection-background-color: #0d6efd;
+    selection-color: #ffffff;
+    color: #212529;
+    outline: 0px; /* Remove dotted border */
+}
+
+/* =================================================
+ *   NEW: QCheckBox Styling
+ * ================================================= */
+QCheckBox {
+    background-color: transparent;
+    spacing: 7px; /* Space between indicator and text */
+    padding: 4px 0px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px; /* Square with rounded corners */
+    border: 2px solid #adb5bd;
+    background-color: #ffffff;
+}
+
+QCheckBox::indicator:hover {
+    border: 2px solid #86b7fe;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #0d6efd;
+    border: 2px solid #0d6efd;
+    /* IMPORTANT: You will need a white checkmark icon */
+    image: url(./resources/check_light.png);
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color: #0b5ed7;
+    border: 2px solid #0b5ed7;
+}
+
+QCheckBox:disabled {
+    color: #6c757d;
+}
+
+QCheckBox::indicator:disabled {
+    background-color: #e9ecef;
+    border: 2px solid #dee2e6;
+}
+
+/* Radio Button Styling */
+QRadioButton {
+    background-color: transparent;
+    spacing: 7px;
+    padding: 4px 0px;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px; /* Makes it circular */
+    border: 2px solid #adb5bd;
+    background-color: #ffffff;
+}
+
+QRadioButton::indicator:hover {
+    border: 2px solid #86b7fe;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #0d6efd;
+    border: 2px solid #0d6efd;
+}
+
+QRadioButton::indicator:checked:hover {
+    background-color: #0b5ed7;
+    border: 2px solid #0b5ed7;
+}
+
+/* =================================================
+ *   NEW: QTabWidget and QTabBar Styling
+ * ================================================= */
+QTabWidget::pane { /* The content area */
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    background-color: #ffffff;
+    padding: 10px;
+}
+
+QTabBar::tab {
+    background-color: #f0f2f5;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    border-bottom: none; /* The selected tab will handle the bottom border */
+    padding: 8px 20px;
+    margin-right: 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+QTabBar::tab:hover {
+    background-color: #e9ecef;
+}
+
+QTabBar::tab:selected {
+    background-color: #ffffff; /* Match the pane background */
+    color: #212529;
+    font-weight: bold;
+    /* Make the selected tab look connected to the pane */
+    border-bottom: 1px solid #ffffff;
+}
+
+QTabBar::tab:!selected {
+    margin-top: 2px; /* Push non-selected tabs down slightly */
+}
+
+/* QMenu Styling for Context Menus */
+QMenu {
+    background-color: #ffffff;
+    border: 1px solid #adb5bd;
+    border-radius: 5px;
+    padding: 5px;
+    color: #212529;
+    /* For a drop shadow, apply QGraphicsDropShadowEffect in your Python code */
+}
+
+QMenu::item {
+    background-color: transparent;
+    padding: 6px 24px 6px 12px;
+    border-radius: 4px;
+    margin: 0px 2px;
+}
+
+QMenu::item:selected {
+    background-color: #0d6efd;
+    color: #ffffff;
+}
+
+QMenu::item:disabled {
+    color: #6c757d;
+    background-color: transparent;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #dee2e6;
+    margin: 4px 0px;
+}
+
+/* Main Table View */
+QTableView {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    gridline-color: #dee2e6; /* Kept for context, but item borders take precedence */
+    selection-background-color: #0d6efd;
+    selection-color: #ffffff;
+}
+
+QTableView::item:alternate {
+    background-color: #f8f9fa;
+}
+
+/* REFINED: Cleaner row separators, removed vertical grid lines */
+QTableView::item {
+    padding: 5px;
+    border-style: none; /* Remove all borders first */
+    border-bottom: 1px solid #dee2e6; /* Add back only the bottom border */
+}
+
+/* Table Header Styling */
+QHeaderView::section {
+    background-color: #f8f9fa;
+    color: #495057;
+    padding: 6px;
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+QHeaderView {
+    border: none;
+}
+
+/* ScrollBar Styling */
+QScrollBar:vertical {
+    background: #e9ecef;
+    border-radius: 4px;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #adb5bd;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #6c757d;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+
+QScrollBar:horizontal {
+    background: #e9ecef;
+    border-radius: 4px;
+    height: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #adb5bd;
+    min-width: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #6c757d;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: none;
+}
+
+/* QMessageBox Styling */
+QMessageBox {
+    background-color: #f0f2f5;
+}
+
+QMessageBox QLabel {
+    color: #212529;
+    font-size: 11pt;
+}
+
+QMessageBox QPushButton {
+    background-color: #6c757d;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    min-width: 80px;
+    font-weight: bold;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #5c636a;
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #565e64;
+}
+
+/* Style for the default button in a message box (e.g., the 'OK' button) */
+QMessageBox QPushButton:default {
+    background-color: #0d6efd;
+}
+QMessageBox QPushButton:default:hover {
+    background-color: #0b5ed7;
+}
+
+QTableView::item:selected {
+    background-color: #0078d7; /* A standard, vibrant blue for selection */
+    color: white;             /* White text, which is highly readable on this blue */
+}
+
+/* ===================================================================
+ *   Styles Merged from modern.qss for the Accounting Helpdesk App
+ * ===================================================================
+ */
+
+QMainWindow {
+    /* Overrides the default widget background for main windows */
+    background-color: #f0f0f0;
+}
+
+QScrollArea {
+    border: none;
+}
+
+#MainWidget { /* Used as the central container in the accounting app */
+    background-color: #ffffff;
+    border-radius: 8px;
+}
+
+QLabel#TitleLabel {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #2c3e50;
+    padding-bottom: 10px;
+}
+
+QLabel#IntroLabel, QLabel#FooterLabel {
+    font-size: 11pt;
+    color: #34495e;
+    padding-bottom: 15px;
+}
+
+QGroupBox {
+    font-weight: bold;
+    font-size: 14pt;
+    margin-top: 15px;
+    padding-top: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 5px 10px;
+    background-color: #ecf0f1;
+    border-radius: 5px;
+    color: #2c3e50;
+}
+
+/* For RichText links in QLabels */
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
