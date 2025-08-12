@@ -24,8 +24,6 @@ class Worker(QObject):
         super().__init__()
         self.backend = backend
         self.signals = WorkerSignals()
-        self.question = None
-        self.document_name = None
 
     @Slot()
     def setup_backend(self):
@@ -38,17 +36,17 @@ class Worker(QObject):
             self.signals.status.emit("Vector stores are ready.")
         except Exception as e:
             self.signals.error.emit((type(e), e, str(e)))
-        self.signals.finished.emit()
+        finally:
+            self.signals.finished.emit()
 
-    @Slot()
-    def ask_question(self):
+    @Slot(str, str, str)
+    def ask_question(self, question: str, document_name: str, ollama_model: str):
         """
         Asks a question to the backend using the specified document.
         """
-        if self.question and self.document_name:
+        if question and document_name:
             try:
-                result = self.backend.ask(self.question, self.document_name)
-                self.signals.result.emit(result)
+                response = self.backend.ask(question, document_name, ollama_model)
+                self.signals.result.emit(response)
             except Exception as e:
                 self.signals.error.emit((type(e), e, str(e)))
-        self.signals.finished.emit()

@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import os
 import shutil
@@ -137,6 +138,10 @@ class ChatbotBackend:
         """
         Deletes a document and its associated vector store.
         """
+        # Remove from QA chains first to release file locks
+        if document_name in self.qa_chains:
+            del self.qa_chains[document_name]
+
         # Find and delete the document file
         doc_path = None
         for ext in ['.pdf', '.docx', '.txt', '.xls', '.xlsx']:
@@ -151,10 +156,6 @@ class ChatbotBackend:
         vector_store_path = self.get_vector_store_for_document(document_name)
         if vector_store_path.exists():
             shutil.rmtree(vector_store_path)
-
-        # Remove from QA chains
-        if document_name in self.qa_chains:
-            del self.qa_chains[document_name]
 
     def setup_qa_chain(self, document_name: str, ollama_model: str):
         """
@@ -173,14 +174,14 @@ class ChatbotBackend:
         retriever = db.as_retriever(search_kwargs={"k": 3})
 
         # Define a more verbose prompt
-        prompt_template = """Use the following pieces of context to answer the user's question.
+        prompt_template = '''Use the following pieces of context to answer the user\'s question.
 Provide a detailed and comprehensive answer based on the context.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
+If you don\'t know the answer, just say that you don\'t know, don\'t try to make up an answer.
 
 Context: {context}
 Question: {question}
 
-Helpful and detailed answer:"""
+Helpful and detailed answer:'''
         PROMPT = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
         )

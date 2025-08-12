@@ -1,7 +1,7 @@
 import sys
 import os
 from pathlib import Path
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon, QTextCursor
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QTextBrowser, QLineEdit, QPushButton,
@@ -21,15 +21,39 @@ from ai_chatbot_app.backend import ChatbotBackend
 from ai_chatbot_app.worker import Worker
 
 class ChatWindow(QWidget):
+    # Signal to ask a question in the worker thread
+    ask_question_signal = Signal(str, str, str)
+    # Signal to trigger backend setup in the worker thread
+    setup_backend_signal = Signal()
+
     def __init__(self, backend: ChatbotBackend, initial_ollama_model: str = None):
         super().__init__()
         self.backend = backend
         self.initial_ollama_model = initial_ollama_model
-        self.thread = None
-        self.worker = None
         self.current_document = None
         self.init_ui()
-        self.run_backend_setup()
+
+        # --- Threading Setup ---
+        self.thread = QThread()
+        self.worker = Worker(self.backend)
+        self.worker.moveToThread(self.thread)
+
+        # Connect worker signals to GUI slots
+        self.worker.signals.result.connect(self.handle_ai_response)
+        self.worker.signals.status.connect(self.update_status)
+        self.worker.signals.error.connect(self.handle_error)
+        
+        # Connect GUI signals to worker slots
+        self.ask_question_signal.connect(self.worker.ask_question)
+        self.setup_backend_signal.connect(self.worker.setup_backend)
+
+        # Start the thread
+        self.thread.start()
+
+        # Initial backend setup
+        self.reload_ai()
+        self.refresh_ollama_models()
+
 
     def init_ui(self):
         self.setWindowTitle(f'Americana Document AI / {AppTitle} {HDVersion} / EXPERIMENTAL')
@@ -149,13 +173,18 @@ class ChatWindow(QWidget):
             models = self.backend.get_ollama_models()
             current_model = self.ollama_model_dropdown.currentText()
             self.ollama_model_dropdown.clear()
+            if self.initial_ollama_model and self.initial_ollama_model not in models:
+                 self.ollama_model_dropdown.addItem(self.initial_ollama_model)
             self.ollama_model_dropdown.addItems(models)
             if current_model in models:
                 self.ollama_model_dropdown.setCurrentText(current_model)
+            elif self.initial_ollama_model in models:
+                self.ollama_model_dropdown.setCurrentText(self.initial_ollama_model)
+
             self.update_status("Ollama models refreshed.")
         except Exception as e:
             self.update_status(f"Error refreshing Ollama models: {e}")
-            QMessageBox.warning(self, "Error refreshing models", f"Could not fetch models from the Ollama server: {e}")
+            QMessageBox.warning(self, "Error", f"Could not fetch models from the Ollama server: {e}")
 
     def save_settings(self):
         new_url = self.ollama_url_input.text().strip()
@@ -165,13 +194,21 @@ class ChatWindow(QWidget):
             
             settings_path = project_root / "settings.json"
             try:
-                with open(settings_path, "r+", encoding="utf-8") as f:
-                    settings = json.load(f)
-                    settings["ollama_server_address"] = new_url
-                    settings["ollama_model"] = selected_model
-                    f.seek(0)
+                # Try to read existing settings
+                if settings_path.exists():
+                    with open(settings_path, "r", encoding="utf-8") as f:
+                        settings = json.load(f)
+                else:
+                    settings = {}
+                
+                # Update with new values
+                settings["ollama_server_address"] = new_url
+                settings["ollama_model"] = selected_model
+
+                # Write back to the file
+                with open(settings_path, "w", encoding="utf-8") as f:
                     json.dump(settings, f, indent=4)
-                    f.truncate()
+
                 QMessageBox.information(self, "Settings Saved", "Ollama settings updated. The AI will now reload.")
                 self.reload_ai()
             except Exception as e:
@@ -275,24 +312,9 @@ class ChatWindow(QWidget):
     def reload_ai(self):
         self.clear_chat()
         self.update_status("Reloading AI... This may take a moment.")
-        self.run_backend_setup()
-
-    def run_backend_setup(self):
-        self.thread = QThread()
-        self.worker = Worker(self.backend)
-        self.worker.moveToThread(self.thread)
-
-        self.thread.started.connect(self.worker.setup_backend)
-        self.worker.signals.finished.connect(self.thread.quit)
-        self.worker.signals.finished.connect(self.worker.deleteLater)
-        self.worker.signals.finished.connect(self.thread.deleteLater)
-        self.worker.signals.finished.connect(self.populate_documents_dropdown)
-        self.worker.signals.status.connect(self.update_status)
-        self.worker.signals.error.connect(self.handle_error)
-
-        self.thread.start()
         self.send_button.setEnabled(False)
         self.input_box.setEnabled(False)
+        self.setup_backend_signal.emit()
 
     def send_message(self):
         if not self.current_document:
@@ -306,30 +328,25 @@ class ChatWindow(QWidget):
         self.add_message("You", question)
         self.input_box.clear()
 
-        self.thread = QThread()
-        self.worker = Worker(self.backend)
-        self.worker.question = question
-        self.worker.document_name = self.current_document
-        self.worker.ollama_model = self.ollama_model_dropdown.currentText()
-        self.worker.moveToThread(self.thread)
+        ollama_model = self.ollama_model_dropdown.currentText()
+        self.ask_question_signal.emit(question, self.current_document, ollama_model)
 
-        self.thread.started.connect(self.worker.ask_question)
-        self.worker.signals.result.connect(self.handle_ai_response)
-        self.worker.signals.finished.connect(self.thread.quit)
-        self.worker.signals.finished.connect(self.worker.deleteLater)
-        self.worker.signals.finished.connect(self.thread.deleteLater)
-
-        self.thread.start()
         self.send_button.setEnabled(False)
         self.input_box.setEnabled(False)
         self.add_message("AI", "<i>Thinking...</i>")
 
     def handle_ai_response(self, response):
+        # Replace "Thinking..." with the actual response
         self.chat_display.moveCursor(QTextCursor.End)
-        self.chat_display.moveCursor(QTextCursor.StartOfBlock, QTextCursor.KeepAnchor)
-        self.chat_display.moveCursor(QTextCursor.End, QTextCursor.KeepAnchor)
-        self.chat_display.textCursor().removeSelectedText()
-        self.add_message("AI", response)
+        cursor = self.chat_display.textCursor()
+        cursor.movePosition(QTextCursor.StartOfBlock, QTextCursor.KeepAnchor)
+        # Check if the last message is the "Thinking..." message
+        if "<i>Thinking...</i>" in cursor.selectedText():
+            cursor.removeSelectedText()
+            self.add_message("AI", response)
+        else: # If some other message came in between, just append
+            self.add_message("AI", response)
+
         self.send_button.setEnabled(True)
         self.input_box.setEnabled(True)
         self.input_box.setFocus()
@@ -339,10 +356,20 @@ class ChatWindow(QWidget):
 
     def update_status(self, status):
         self.status_bar.showMessage(status)
-        if status == "Vector stores are ready.":
+        if "Vector stores are ready." in status:
+            self.populate_documents_dropdown()
             self.send_button.setEnabled(True)
             self.input_box.setEnabled(True)
 
     def handle_error(self, error_tuple):
-        self.add_message("Error", str(error_tuple[1]))
-        self.update_status("Error occurred. Please check the console.")
+        error_message = str(error_tuple[1])
+        self.add_message("Error", error_message)
+        self.update_status(f"Error: {error_message}")
+        # Re-enable buttons after an error
+        self.send_button.setEnabled(True)
+        self.input_box.setEnabled(True)
+
+    def closeEvent(self, event):
+        self.thread.quit()
+        self.thread.wait()
+        super().closeEvent(event)
